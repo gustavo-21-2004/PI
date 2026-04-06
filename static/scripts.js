@@ -1,19 +1,26 @@
-document.addEventListener('DOMContentLoaded', (event) => {
-    confirm.log("javascript carregado e funcionando");
+async function enviar() {
+    const input = document.getElementById("input");
+    const chat = document.getElementById("chat");
 
-    //função para obter o valor de umcookie pelo nome
-    function getCookie(name) {
-        let value = "; " + document.cookie;
-        let parts = value.split("; " + name + "=");
-        if (parts.length === 2) return parts.pop().split(";").shift();
-    
-    }
+    const mensagem = input.value;
 
-    //verificar se o cookie 'usuario' esta presente
-    let usuarioCookie = getCookie('usuario');
-    if (usuarioCookie){
-        alert('os cookies estao rodando. valor de cookie: ' + usuarioCookie);
-    } else {
-        alert('nenhum cookie encontrdo');
-    }
-});
+    chat.innerHTML += `<p><b>Você:</b> ${mensagem}</p>`;
+
+    const res = await fetch("/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ mensagem })
+    });
+
+    const data = await res.json();
+
+    chat.innerHTML += `<p><b>IA:</b> ${data.resposta}</p>`;
+
+    // tocar áudio
+    const audio = new Audio(data.audio);
+    audio.play();
+
+    input.value = "";
+}
