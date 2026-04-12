@@ -1,20 +1,398 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Triagem IA</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.R.I.A - Sistema de Classificação Rápida</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Reset básico */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            /* Usando a nova fonte como principal */
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- BARRA LATERAL (SIDEBAR) --- */
+        .sidebar {
+            width: 280px;
+            background-color: #f7f9fa;
+            border-right: 1px solid #e3e8ee;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+        }
+
+        .new-chat-btn {
+            background-color: #ffffff;
+            color: #0056b3;
+            border: 1px solid #d0d7de;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.2s;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .new-chat-btn:hover {
+            background-color: #f0f4f8;
+        }
+
+        .sidebar-title {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            font-weight: 700;
+        }
+
+        .history-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .history-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: #333;
+            font-size: 0.95rem;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.2s;
+        }
+
+        .history-item:hover, .history-item.active {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+
+        /* --- ÁREA DO CHAT PRINCIPAL --- */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+        }
+
+        /* --- CABEÇALHO ATUALIZADO --- */
+        .chat-header {
+            padding: 15px 30px;
+            border-bottom: 1px solid #e3e8ee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 1.8rem;
+        }
+
+        .header-text-container {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        /* Título longo */
+        .main-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Sigla C.R.I.A com cor legal */
+        .cria-acronym {
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            /* Efeito de Degradê (Gradient) */
+            background: linear-gradient(90deg, #0056b3, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 2px;
+        }
+
+        /* ESTILOS DO BOTÃO DE PERFIL */
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #ffffff;
+            border: 1px solid #e3e8ee;
+            padding: 6px 15px 6px 6px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .profile-btn:hover {
+            background-color: #f4f7f6;
+            border-color: #d0d7de;
+        }
+
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #0056b3;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-text {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* --- MENSAGENS E INPUT --- */
+        .chat-messages {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 14px 18px;
+            border-radius: 15px;
+            line-height: 1.5;
+            font-size: 1rem;
+        }
+
+        .ai-message {
+            background-color: #f0f4f8;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message {
+            background-color: #0056b3;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .input-wrapper {
+            padding: 20px 30px 30px 30px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+
+        .chat-input-area {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            background-color: #f4f7f6;
+            border: 1px solid #e0e0e0;
+            border-radius: 30px;
+            padding: 5px 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+
+        .chat-input-area:focus-within {
+            border-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0,86,179,0.1);
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+
+        .mic-button, .send-button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+            color: #666;
+        }
+
+        .mic-button:hover, .send-button:hover {
+            background-color: #e0e4e8;
+            color: #0056b3;
+        }
+        
+        .send-button {
+            background-color: #0056b3;
+            color: white;
+            margin-left: 5px;
+        }
+        
+        .send-button:hover {
+            background-color: #004494;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
-<h1>💬 Assistente de Triagem</h1>
+    <div class="sidebar">
+        <button class="new-chat-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Nova Triagem
+        </button>
 
-<div id="chat"></div>
+        <div class="sidebar-title">Suas Consultas</div>
+        
+        <ul class="history-list">
+            <li class="history-item active">Sintomas de febre - Hoje</li>
+            <li class="history-item">Dor no joelho esquerdo - 10/04</li>
+            <li class="history-item">Renovação de receita - 25/03</li>
+            <li class="history-item">Dúvida sobre medicação - 12/02</li>
+        </ul>
+    </div>
 
-<input type="text" id="input" placeholder="Digite os sintomas...">
-<button onclick="enviar()">Enviar</button>
+    <div class="chat-container">
+        
+        <div class="chat-header">
+            
+            <div class="header-title">
+                <span class="header-icon">🤖</span> <div class="header-text-container">
+                    <span class="main-title">Sistema de Classificação Rápida por Inteligência Artificial</span>
+                    <span class="cria-acronym">(C.R.I.A)</span>
+                </div>
+            </div>
+            
+            <button class="profile-btn" title="Acessar seu perfil">
+                <div class="profile-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <span class="profile-text">Seu Perfil</span>
+            </button>
+        </div>
 
-<script src="../static/script.js"></script>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message-wrapper">
+                <div class="message ai-message">
+                    Olá! Sou o C.R.I.A. Por favor, me conte quais sintomas você está sentindo hoje.
+                </div>
+            </div>
+            
+            <div class="message-wrapper">
+                <div class="message user-message">
+                    Estou com febre alta e muita dor de cabeça desde a noite de ontem.
+                </div>
+            </div>
+        </div>
 
+        <div class="input-wrapper">
+            <div class="chat-input-area">
+                
+                <input type="text" id="user-input" placeholder="Descreva os sintomas aqui..." autocomplete="off">
+                
+                <button class="mic-button" title="Gravar áudio" onclick="startDictation()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+
+                <button class="send-button" title="Enviar mensagem" onclick="sendMessage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const messageText = inputField.value.trim();
+            
+            if (messageText !== "") {
+                const chatMessages = document.getElementById('chat-messages');
+                
+                const wrapperDiv = document.createElement('div');
+                wrapperDiv.classList.add('message-wrapper');
+                
+                const userDiv = document.createElement('div');
+                userDiv.classList.add('message', 'user-message');
+                userDiv.textContent = messageText;
+                
+                wrapperDiv.appendChild(userDiv);
+                chatMessages.appendChild(wrapperDiv);
+                
+                inputField.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function startDictation() {
+            alert("A gravação de voz seria iniciada agora.");
+        }
+    </script>
 </body>
 </html>
